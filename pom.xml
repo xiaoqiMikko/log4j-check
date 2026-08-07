@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.mikko</groupId>
+  <artifactId>log4j-check</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>log4j-check</name>
+  <description>扫出你实际装的四个 log4j 模块版本,再解析 log4j2 配置,告诉你 2025/2026 这 7 条「配置静默失效」公告里你真正中了几条,以及该升到哪个版本才一次到位</description>
+  <url>https://github.com/xiaoqiMikko/log4j-check</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <!--
+    ⚠️ 本机 Maven 3.5.4(2018 年)卡死了插件版本 —— 见 docs/bets/5-spring-cloud-config.md:
+       compiler 3.13 / surefire 3.x / jar 3.4 全都要求 Maven >= 3.6.3,
+       而 Maven 自带的 compiler 3.1 不认 maven.compiler.release,会退回 source 5 编译失败。
+       能用的交集就是下面这三个版本号,别升。
+  -->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+    <junit.version>5.10.2</junit.version>
+  </properties>
+
+  <dependencies>
+    <!-- 运行时零依赖;JUnit 仅测试期。
+         🔴 尤其不能依赖 log4j 本身 —— 一个排查 log4j 配置问题的工具自己带着一份 log4j,
+            会在扫描自己的目录时把自己报出来,也会让用户怀疑是不是版本冲突导致的误报。
+         XML 解析用 JDK 自带的 javax.xml(且已关掉外部实体),properties 用 java.util.Properties。 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>log4j-check</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>dev.mikko.log4jcheck.Main</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,269 @@
+{
+ "rows": [
+  {
+   "cve": "CVE-2026-49844",
+   "module": "log4j-api",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "2.13.1",
+   "low_incl": true,
+   "high": "2.25.5",
+   "high_incl": false,
+   "fixed": "2.25.5",
+   "line": "2.25",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-49844",
+   "module": "log4j-api",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "2.26.0",
+   "low_incl": true,
+   "high": "2.26.1",
+   "high_incl": false,
+   "fixed": "2.26.1",
+   "line": "2.26",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-49844",
+   "module": "log4j-api",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "3.0.0-alpha1",
+   "low_incl": true,
+   "high": "3.0.0-beta2",
+   "high_incl": true,
+   "fixed": "",
+   "line": "3.x",
+   "fixed_ok": false
+  },
+  {
+   "cve": "CVE-2026-34481",
+   "module": "log4j-layout-template-json",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "2.14.0",
+   "low_incl": true,
+   "high": "2.25.4",
+   "high_incl": false,
+   "fixed": "2.25.4",
+   "line": "2.25",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-34481",
+   "module": "log4j-layout-template-json",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "3.0.0-alpha1",
+   "low_incl": true,
+   "high": "3.0.0-beta3",
+   "high_incl": true,
+   "fixed": "",
+   "line": "3.x",
+   "fixed_ok": false
+  },
+  {
+   "cve": "CVE-2026-34480",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.9,
+   "low": "2.0-alpha1",
+   "low_incl": true,
+   "high": "2.25.4",
+   "high_incl": false,
+   "fixed": "2.25.4",
+   "line": "2.25",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-34480",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.9,
+   "low": "3.0.0-alpha1",
+   "low_incl": true,
+   "high": "3.0.0-beta3",
+   "high_incl": true,
+   "fixed": "",
+   "line": "3.x",
+   "fixed_ok": false
+  },
+  {
+   "cve": "CVE-2026-34479",
+   "module": "log4j-1.2-api",
+   "sev": "medium",
+   "score": 6.9,
+   "low": "2.7",
+   "low_incl": true,
+   "high": "2.25.4",
+   "high_incl": false,
+   "fixed": "2.25.4",
+   "line": "2.25",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-34479",
+   "module": "log4j-1.2-api",
+   "sev": "medium",
+   "score": 6.9,
+   "low": "3.0.0-alpha1",
+   "low_incl": true,
+   "high": "3.0.0-beta2",
+   "high_incl": true,
+   "fixed": "",
+   "line": "3.x",
+   "fixed_ok": false
+  },
+  {
+   "cve": "CVE-2026-34478",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.9,
+   "low": "2.21.0",
+   "low_incl": true,
+   "high": "2.25.4",
+   "high_incl": false,
+   "fixed": "2.25.4",
+   "line": "2.25",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-34478",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.9,
+   "low": "3.0.0-beta1",
+   "low_incl": true,
+   "high": "3.0.0-beta3",
+   "high_incl": true,
+   "fixed": "",
+   "line": "3.x",
+   "fixed_ok": false
+  },
+  {
+   "cve": "CVE-2026-34477",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "2.12.0",
+   "low_incl": true,
+   "high": "2.25.4",
+   "high_incl": false,
+   "fixed": "2.25.4",
+   "line": "2.25",
+   "fixed_ok": true
+  },
+  {
+   "cve": "CVE-2026-34477",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "3.0.0-alpha1",
+   "low_incl": true,
+   "high": "3.0.0-beta3",
+   "high_incl": true,
+   "fixed": "",
+   "line": "3.x",
+   "fixed_ok": false
+  },
+  {
+   "cve": "CVE-2025-68161",
+   "module": "log4j-core",
+   "sev": "medium",
+   "score": 6.3,
+   "low": "2.0-beta9",
+   "low_incl": true,
+   "high": "2.25.3",
+   "high_incl": false,
+   "fixed": "2.25.3",
+   "line": "2.25",
+   "fixed_ok": true
+  }
+ ],
+ "batch": [
+  "CVE-2026-49844",
+  "CVE-2026-34481",
+  "CVE-2026-34480",
+  "CVE-2026-34479",
+  "CVE-2026-34478",
+  "CVE-2026-34477",
+  "CVE-2025-68161"
+ ],
+ "modules": [
+  "log4j-1.2-api",
+  "log4j-api",
+  "log4j-core",
+  "log4j-layout-template-json"
+ ],
+ "core_visible": [
+  "CVE-2025-68161",
+  "CVE-2026-34477",
+  "CVE-2026-34478",
+  "CVE-2026-34480"
+ ],
+ "all_visible": [
+  "CVE-2025-68161",
+  "CVE-2026-34477",
+  "CVE-2026-34478",
+  "CVE-2026-34479",
+  "CVE-2026-34480",
+  "CVE-2026-34481"
+ ],
+ "blind_core": [
+  "CVE-2026-34479",
+  "CVE-2026-34481",
+  "CVE-2026-49844"
+ ],
+ "blind_all": [
+  "CVE-2026-49844"
+ ],
+ "structural_blind": {
+  "CVE-2026-49844": [
+   "GHSA-qv9r-c865-cp47",
+   "type=unreviewed + vulnerabilities 数组为空(无包名/无区间/无修复版)"
+  ]
+ },
+ "chains": [
+  [
+   "CVE-2025-68161",
+   "CVE-2026-34477"
+  ],
+  [
+   "CVE-2026-34481",
+   "CVE-2026-49844"
+  ]
+ ],
+ "targets": {
+  "log4j-api|2.25": "2.25.5",
+  "log4j-api|2.26": "2.26.1",
+  "log4j-layout-template-json|2.25": "2.25.4",
+  "log4j-core|2.25": "2.25.4",
+  "log4j-1.2-api|2.25": "2.25.4"
+ },
+ "popular": "2.25.4",
+ "beyond": [
+  "CVE-2026-49844"
+ ],
+ "ghosts": [],
+ "titles": {
+  "CVE-2026-49844": "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in…",
+  "CVE-2026-34481": "Apache Log4j JSON Template Layout: Improper serialization of non-finite floating-point values in…",
+  "CVE-2026-34480": "Apache Log4j Core: Silent log event loss in XmlLayout due to unescaped XML 1.0 forbidden characters",
+  "CVE-2026-34479": "Apache Log4j 1 to Log4j 2 bridge: silent log event loss in Log4j1XmlLayout due to unescaped XML 1.0…",
+  "CVE-2026-34478": "Apache Log4j Core: log injection in `Rfc5424Layout` due to silent configuration incompatibility",
+  "CVE-2026-34477": "Apache Log4j Core: `verifyHostName` attribute silently ignored in TLS configuration",
+  "CVE-2025-68161": "Apache Log4j does not verify the TLS hostname in its Socket Appender"
+ },
+ "first_sentence": {
+  "CVE-2026-49844": "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in Apache Log4j API produces output that is not valid JSON.",
+  "CVE-2026-34481": "Apache Log4j's JsonTemplateLayout, in versions up to and including 2.25.3, produces invalid JSON output when log events contain non-finite floating-point values (NaN, Infinity, or -Infinity), which are prohibited by RFC…",
+  "CVE-2026-34480": "Apache Log4j Core's XmlLayout, in versions up to and including 2.25.3, fails to sanitize characters forbidden by the XML 1.0 specification producing invalid XML output whenever a log message or MDC value contains such c…",
+  "CVE-2026-34479": "The Log4j1XmlLayout from the Apache Log4j 1-to-Log4j 2 bridge fails to escape characters forbidden by the XML 1.0 standard, producing malformed XML output.",
+  "CVE-2026-34478": "Apache Log4j Core's Rfc5424Layout, in versions 2.21.0 through 2.25.3, is vulnerable to log injection via CRLF sequences due to undocumented renames of security-relevant configuration attributes.",
+  "CVE-2026-34477": "The fix for CVE-2025-68161 was incomplete: it addressed hostname verification only when enabled via the log4j2.sslVerifyHostName system property, but not when configured through the verifyHostName attribute of the <Ssl>…",
+  "CVE-2025-68161": "The Socket Appender in Log4j Core versions 2.0-beta9 through 2.25.2 does not perform TLS hostname verification of the peer certificate, even when the verifyHostName configuration attribute or the log4j2.sslVerifyHostNam…"
+ }
+}
