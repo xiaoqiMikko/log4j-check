@@ -24,7 +24,7 @@ Dependabot 告诉你「log4j 有 N 个漏洞」。这个工具回答三个它不
 
 ## 三个承重结论(都可以自己复核)
 
-### 一、🔥 升到 2.25.4 的人没升到位,而漏掉的那条 Dependabot 报不出来
+### 一、🔥 升到 2.25.4 的人没升到位(漏掉的那条,曾经 Dependabot 也报不出来)
 
 这批 7 条里,**6 条的修复版都 ≤ 2.25.4**。于是绝大多数人会得出「升到 2.25.4」这个答案。
 
@@ -34,16 +34,34 @@ Dependabot 告诉你「log4j 有 N 个漏洞」。这个工具回答三个它不
 > The fix released in version `2.25.4` did not cover all affected code paths.
 > CVE-2026-49844 was assigned to the remaining issue …
 
-而这一条**恰好是 Dependabot 结构性报不出来的那一条**:
-它的 GitHub advisory(`GHSA-qv9r-c865-cp47`)是 `unreviewed`,
+> ### 📌 更正(2026-08-16)
+>
+> **本节原本写着「而这一条恰好是 Dependabot 结构性报不出来的那一条」—— 那句话现在只对一半。**
+>
+> `GHSA-qv9r-c865-cp47` 已于 **2026-08-13** 被 GitHub 转为 `reviewed` 并补齐包信息,
+> 补上的两个区间是 `>= 2.13.1, < 2.25.5` 和 `>= 2.26.0, < 2.26.1`:
+>
+> - ✅ **跑 2.x 的人,现在收得到 Dependabot 告警了。**
+> - 🔴 **但 `3.x` 预览线(`3.0.0-alpha1` ~ `3.0.0-beta2`)至今没有对应区间,那条线仍然报不出来。**
+>
+> **升级结论完全没变** —— `log4j-api` 仍然要 **2.25.5**(2.26 线要 **2.26.1**)。
+> 变的只是「机器看不看得见它」。本工具的判定表已按版本线逐条更新,报告里印的数字由表算出,不再硬编码。
+>
+> 🔑 **这件事本身比原来那个例子更值得记**:advisory 的形态**会随时间被上游补齐**,
+> 而**你上一次扫描的结论不会自己更新,也不会有人通知你**。
+> **「当时扫过了」和「现在是安全的」,是两件事。**
+
+它的 GitHub advisory(`GHSA-qv9r-c865-cp47`)**在 2026-08-13 之前**是 `unreviewed`,
 且 `vulnerabilities` 数组**为空** —— 没有包名、没有版本区间、没有修复版,
-Dependabot 拿不到任何可以跟你的依赖树比对的数据。
+那段时间 Dependabot 拿不到任何可以跟你的依赖树比对的数据。
 
-在 OSV.dev 上同样如此:另外 6 条都能通过 GHSA alias 拿到 Maven 坐标,**只有它拿不到**
+在 OSV.dev 上当时同样如此:另外 6 条都能通过 GHSA alias 拿到 Maven 坐标,**只有它拿不到**
 (它在 OSV 里连 GHSA alias 都没有)。这是第三个源上的独立佐证,
-`tools/recheck_before_publish.py` 每次重跑都会重新核实。
+`tools/recheck_before_publish.py` 每次重跑都会重新核实
+(**该脚本现在也会把「已经补齐」这件事本身报出来**)。
 
-> 🔴 **这一条别读成「Dependabot 不好用」。** 它是「这条数据不存在」,不是「这个工具有 bug」。
+> 🔴 **这一条别读成「Dependabot 不好用」。** 它是「这条数据当时不存在」,不是「这个工具有 bug」。
+> `unreviewed` 是 GitHub 的正常流程状态,而 08-13 的补齐正是那个流程在正常走完。
 
 另一条链是 `CVE-2025-68161`(2.25.3)→ `CVE-2026-34477`(2.25.4):
 `verifyHostName` **属性**自 2.12.0 引入,却一路到 2.25.3 都被静默忽略,
@@ -184,7 +202,7 @@ JDK 17+,`mvn package`。运行时零依赖 —— **尤其不依赖 log4j 本身
 - `CVE-2026-34479` https://github.com/advisories/GHSA-h383-gmxw-35v2
 - `CVE-2026-34480` https://github.com/advisories/GHSA-3pxv-7cmr-fjr4
 - `CVE-2026-34481` https://github.com/advisories/GHSA-w35j-pv5h-q9q9
-- `CVE-2026-49844` https://github.com/advisories/GHSA-qv9r-c865-cp47 ← unreviewed,无包数据
+- `CVE-2026-49844` https://github.com/advisories/GHSA-qv9r-c865-cp47 ← 2026-08-13 已转 reviewed 并补齐 2.x 区间;3.x 线仍无覆盖
 - `CVE-2025-68161` https://github.com/advisories/GHSA-vc5p-v9hr-52mj
 
 Apache License 2.0

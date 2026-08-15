@@ -73,20 +73,31 @@ class RemediationTest {
     }
 
     @Test
-    @DisplayName("⭐ 承重:照最常见的 2.25.4 升级,仍然漏一条,且那条 Dependabot 报不出来")
+    @DisplayName("⭐ 承重:照最常见的 2.25.4 升级仍然漏一条(2026-08-16:漏这条的事实没变,"
+            + "但它已不再是 Dependabot 盲区)")
     void popularFixLeavesOneBehind() {
         List<Scanner.Artifact> arts = List.of(
                 art("log4j-core", "2.24.0"), art("log4j-api", "2.24.0"));
         List<Cve> beyond = Remediation.beyondPopularFix(versionHits(arts));
         Set<String> ids = new LinkedHashSet<>();
         beyond.forEach(c -> ids.add(c.cveId()));
+
+        // ✅ 真正的承重论据:升到 2.25.4 不够,log4j-api 上还有一条要 2.25.5。**这条没变。**
         assertEquals(Set.of("CVE-2026-49844"), ids);
-        assertTrue(beyond.stream().allMatch(Cve::dependabotBlind),
-                "🔴 唯一漏下的那条恰好是 Dependabot 结构性报不出来的 —— 这是本注最值钱的一句话");
-        // 把目标顶高的那条要能在计划里指名道姓
+
+        // 🔴 2026-08-16 事实变更(本测试是被这次变更打挂之后改的,不是先改测试再改代码):
+        //    GHSA-qv9r-c865-cp47 于 2026-08-13 转 reviewed 并补齐两条 2.x 区间,
+        //    所以对跑 2.x 的人来说,它**现在报得出来了**。
+        //    原断言是 allMatch(dependabotBlind),曾是「本注最值钱的一句话」——
+        //    ⚠️ 那句话有时效,而工具此前每次运行都在无条件重复它。
+        assertTrue(beyond.stream().noneMatch(Cve::dependabotBlind),
+                "2.x 线已被上游补齐,不该再声称『这条机器报不出来』");
+
+        // 把目标顶高的那条仍要能在计划里指名道姓(这部分与盲区无关,不受影响)
         Remediation.Plan p = planFor(Remediation.plan(versionHits(arts), arts), "log4j-api");
         assertEquals("CVE-2026-49844", p.drivenBy());
-        assertTrue(p.blindDriven());
+        assertFalse(p.blindDriven(),
+                "2.x 线不再是盲区驱动 —— 3.x 线仍是,见 CveTableTest#oneStructuralBlindSpot");
     }
 
     @Test

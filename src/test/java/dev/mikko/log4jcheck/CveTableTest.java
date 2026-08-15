@@ -44,14 +44,30 @@ class CveTableTest {
     }
 
     @Test
-    @DisplayName("🔴 承重:恰好一条是 Dependabot 结构性盲区,且它就是 CVE-2026-49844")
+    @DisplayName("🔴 承重:盲区精确到「版本线」——49844 只剩 3.x 线是盲区,2.25/2.26 已被上游补齐")
     void oneStructuralBlindSpot() {
         List<Cve> blind = CveTable.all().stream().filter(Cve::dependabotBlind).toList();
-        assertFalse(blind.isEmpty(), "本注最硬的论据不能消失");
+        assertFalse(blind.isEmpty(), "本注最硬的论据不能整条消失");
+
         Set<String> ids = new HashSet<>();
         blind.forEach(c -> ids.add(c.cveId()));
-        assertEquals(Set.of("CVE-2026-49844"), ids);
-        assertEquals(1, CveTable.DEPENDABOT_BLIND);
+        assertEquals(Set.of("CVE-2026-49844"), ids, "盲区仍然只出在这一条 CVE 上");
+
+        // 🔴 2026-08-16:上游 08-13 补齐了 GHSA-qv9r-c865-cp47,但**只覆盖两条 2.x 线**
+        //    (>=2.13.1,<2.25.5 和 >=2.26.0,<2.26.1),3.x 预览线至今没有对应区间。
+        //    → 盲区从「整条 CVE」收窄为「一条版本线」。一刀切翻成 false 会让这里挂掉。
+        Set<String> blindLines = new HashSet<>();
+        blind.forEach(c -> blindLines.add(c.line()));
+        assertEquals(Set.of("3.x"), blindLines,
+                "只有 3.x 线仍是盲区,实得:" + blindLines);
+        assertEquals(1, CveTable.dependabotBlind(), "按版本线数,盲区恰好 1 条");
+
+        // 反向钉死:两条 2.x 线**必须**已经不是盲区,否则就是没跟上上游
+        CveTable.all().stream()
+                .filter(c -> c.cveId().equals("CVE-2026-49844"))
+                .filter(c -> c.line().startsWith("2."))
+                .forEach(c -> assertFalse(c.dependabotBlind(),
+                        c.line() + " 线 08-13 已被 advisory 覆盖,不该再标成盲区"));
     }
 
     @Test

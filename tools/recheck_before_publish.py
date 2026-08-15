@@ -113,13 +113,75 @@ non_core = sorted(c for c, v in osv.items()
 note(len(non_core) >= 2,
      "只盯 log4j-core 会漏掉的条目(OSV 口径 %d 条:%s)" % (len(non_core), non_core))
 
-# 承重二 ⭐ CVE-2026-49844 在 OSV 里既没有 GHSA alias、也没有任何 Maven 坐标
-#          —— 这是「Dependabot 结构性报不出」在第三个源上的独立佐证
+# 承重二 ⭐ 「Dependabot 结构性报不出」的独立佐证
+#
+# 🔴🔴 2026-08-16 改写 —— 这段原本是单向断言 `note(not v["modules"], ...)`,
+#      即「OSV 里也拿不到坐标」。**上游 2026-08-13 把 GHSA-qv9r-c865-cp47 转成 reviewed
+#      并补齐了包信息之后,这个断言就永久 FAIL 了,而 FAIL 的原因不是我们错了,是世界变了。**
+#
+#      单向断言在这种情况下只会说「🔴 不成立」,却说不出「它变成什么样了、文案该怎么改」——
+#      而那恰恰是发文前唯一需要知道的事。所以改成**状态感知**:
+#      先量出当前状态,再据此要求文案必须已经包含更正。
+#
+#      🔑 这正是本注最值钱的那句话的机器化身:
+#         **advisory 的形态会随时间补齐,而没有任何东西会通知你。**
+#         那就让复核脚本来通知。
 v = osv["CVE-2026-49844"]
-note(not v["modules"],
-     "CVE-2026-49844 在 OSV 里**也**拿不到 Maven 包/版本数据",
-     "(alias=%s,模块=%s)—— 「Dependabot 结构性报不出」的独立佐证"
-     % (v["ghsa"] or "无", sorted(v["modules"])))
+BLIND_STILL = not v["modules"]
+
+if BLIND_STILL:
+    note(True,
+         "CVE-2026-49844 在 OSV 里仍然拿不到 Maven 包/版本数据",
+         "(alias=%s,模块=%s)—— 原始主张仍然成立"
+         % (v["ghsa"] or "无", sorted(v["modules"])))
+else:
+    print("   ⚠️  **上游已补齐** —— CVE-2026-49844 现在顺着 alias 拿得到 Maven 坐标了")
+    print("        alias=%s  模块=%s  修复版=%s"
+          % (",".join(v["ghsa"]) or "无", sorted(v["modules"]), sorted(v["fixes"])))
+    print("        → 这**不是**我们写错了,是 2026-08-13 GitHub 补齐了这条 advisory。")
+    print("        → 升级结论不变(log4j-api 仍要 2.25.5),变的只是「机器看不看得见」。")
+    # 🔴 但它对文案是硬要求:凡是还在说「这条机器读不到」的文案,必须已经带更正块。
+    #
+    # ☠️ 2026-08-16 负向自测抓到本段自己的两个假通过,**别把这两条改回裸子串**:
+    #    ① `"reviewed"` 会命中 `unreviewed` 的子串 —— 于是「文案里全是 unreviewed」
+    #       反而被读成「带了 reviewed 更正标记」。**判据被它要检测的那个词喂饱了。**
+    #       → 用 `(?<!un)reviewed` 排除。
+    #    ② `"更正"` 太弱,「不带任何更正标记」这句话本身就含「更正」。
+    #       → 锚点必须带日期,如 `更正(2026-08-1x)`,那只可能出现在真的更正块里。
+    #    🔑 同「查『那个词没了』证明不了『那个说法没了』」,方向相反、病因相同。
+    CORRECTION_MARKS = (
+        r"更正[((]\s*2026-08-1[3-9]",   # 带日期的更正块标题
+        r"2026-08-13\s*(起|已|,|,)",     # 明确指认上游变更日的叙述
+        r"已补齐",
+        r"(?<!un)reviewed",              # reviewed 但不是 unreviewed
+    )
+    STALE_CLAIMS = ("机器读不到", "结构性报不出", "报不出来", "unreviewed")
+
+    # 双向自测 —— 照红线判据那段的先例做,**判据自己也要被验一次**。
+    # 上面那两个假通过就是被这种自测抓出来的;没有它,改回裸子串不会有任何报错。
+    _NEG = "这条 advisory 是 unreviewed,机器读不到,Dependabot 报不出来。"
+    _POS = "📌 更正(2026-08-16):这条已于 2026-08-13 转 reviewed,不再是盲区。"
+    _neg_hit = [m for m in CORRECTION_MARKS if re.search(m, _NEG)]
+    _pos_hit = [m for m in CORRECTION_MARKS if re.search(m, _POS)]
+    note(not _neg_hit and bool(_pos_hit),
+         "更正标记判据双向自测:只有 unreviewed 的文本不算带了更正标记",
+         "(反例命中 %s / 正例命中 %s)" % (_neg_hit or "无", _pos_hit))
+    for path in sys.argv[1:]:
+        try:
+            with open(path, encoding="utf-8") as fh:
+                doc = fh.read()
+        except OSError as e:
+            note(False, "文案读不开:%s" % path, str(e))
+            continue
+        stale = [s for s in STALE_CLAIMS if s in doc]
+        if not stale:
+            note(True, "文案未出现过期说法:%s" % path)
+            continue
+        has_mark = [m for m in CORRECTION_MARKS if re.search(m, doc)]
+        note(bool(has_mark),
+             "文案仍在说 %s —— 必须带更正标记:%s" % (stale, path),
+             "命中标记 %s" % has_mark if has_mark
+             else "🔴 一个更正标记都没有,别发")
 others_with_data = [c for c in BATCH if c != "CVE-2026-49844" and osv[c]["modules"]]
 note(len(others_with_data) == 6,
      "而另外 6 条在 OSV 里都拿得到 Maven 坐标(说明不是 OSV 整体没数据)",
@@ -198,27 +260,56 @@ ctrl = head_code("https://repo1.maven.org/maven2/%s/log4j-core/2.99.99/log4j-cor
 note(ctrl != 200, "负对照 log4j-core:2.99.99 拿不到(证明上面那些 200 是真的)", "HTTP %d" % ctrl)
 
 # ══════════════ 口径红线 ══════════════
-print("\n口径红线(判据要读得出立场,不做朴素子串匹配):")
-NEG = ("不是", "不许", "没有", "绝不", "不该", "并非", "谈不上", "远不", "别")
+#
+# 🔴 **判据必须读得出立场。** 这是第 9 注栽过三次的那个病(`10-教训.md`),
+#    而这个脚本的第一版又栽了两次,方向和上次完全一样 ——
+#    判据看的东西和它想验证的事情差了一层:
+#
+#      ① 只往前看 16 个字:「**不许说**「log4j 又出大洞 / 又一个 Log4Shell / …」」
+#         里的否定词落在窗口外 → 把一条**红线声明本身**判成踩线。
+#      ② 只往前看:中文大量后置否定 —— 「一条 **RCE** 都**没有**」的否定词在后面。
+#
+#    两处若照判据去改文案,**就会亲手删掉唯一在防止说过头的那几句话**。
+#    → 改成:取该短语所在的**整句**(中文标点断句),否定词出现在同一句内即算被否定。
+#
+# ⚠️ 残余风险(说清楚,不假装解决了):句内否定仍可能被别的成分「借用」,
+#    比如「这不是危言耸听,log4j 又出大洞了」会被放行。
+#    所以下面**无论通过与否都把每一处出现连上下文打出来**给人看 ——
+#    第 9 注那三个 bug 全是靠「把判据结论和原始数据摆在一起」发现的,不是靠判据自己发现的。
+print("\n口径红线(判据读的是**整句**的立场,不是前 N 个字):")
+NEG = ("不是", "不许", "不能", "没有", "无 RCE", "绝不", "不该", "并非",
+       "谈不上", "远不", "别", "不算", "不属于", "不到", "帮不了")
+SENT_SPLIT = re.compile(r"[。!?;\n]|——")
 
 
-def unnegated(text, phrase):
-    """返回该短语所有**没有被否定**的出现位置上下文。"""
-    bad = []
-    i = text.find(phrase)
-    while i >= 0:
-        before = text[max(0, i - 16):i]
-        if not any(n in before for n in NEG):
-            bad.append(text[max(0, i - 45):i + len(phrase) + 15].replace("\n", " "))
-        i = text.find(phrase, i + 1)
-    return bad
+def sentences_with(text, phrase):
+    """返回 [(整句, 是否被否定)],覆盖该短语的每一次出现。"""
+    out = []
+    for sent in SENT_SPLIT.split(text):
+        if phrase in sent:
+            out.append((sent.strip(), any(n in sent for n in NEG)))
+    return out
 
 
 for phrase in ["又一个 Log4Shell", "新的 Log4Shell", "又出大洞", "严重漏洞", "高危漏洞",
                "紧急升级", "远程代码执行", "RCE"]:
-    bad = unnegated(DOC, phrase)
-    note(not bad, "文案里没有未被否定的「%s」" % phrase,
-         "踩线上下文:%s" % bad[:2] if bad else "")
+    hits = sentences_with(DOC, phrase)
+    bad = [s for s, ok in hits if not ok]
+    note(not bad, "「%s」的每一次出现都在否定语境里(%d 处)" % (phrase, len(hits)),
+         "🔴 未被否定:%s" % bad[:2] if bad else "")
+    # 🔴 通过也要把原文摆出来 —— 判据读不出的立场只能靠人看
+    for s, ok in hits:
+        print("        %s %s" % ("否定" if ok else "🔴 未否定",
+                                 (s[:96] + "…") if len(s) > 96 else s))
+
+# 🔴 判据双向自测:一个永远为真的红线检查比没有检查更糟(它看起来像有防线)。
+_probe_ok = "这批全是 medium,一条 RCE 都没有"
+_probe_bad = "log4j 又出大洞了,赶紧全量升级"
+_a = sentences_with(_probe_ok, "RCE")
+_b = sentences_with(_probe_bad, "又出大洞")
+note(bool(_a) and _a[0][1] and bool(_b) and not _b[0][1],
+     "红线判据双向自测:后置否定认得出,真踩线也抓得到",
+     "(正例 %s / 反例 %s)" % (_a, _b))
 
 print("\n免责与边界(这几句必须在文案里,少一句就等于在暗示「扫过就没事」):")
 REQUIRED = [
@@ -233,7 +324,12 @@ for kw, why in REQUIRED:
 print("\n口径提醒(不是断言,人自己核):")
 print("   · 「只盯 log4j-core 会漏 3 条」是**按坐标反查**的口径,")
 print("     不等于「Dependabot 会漏 3 条」—— Dependabot 按你真实的依赖树逐模块告警。")
-print("     真正的结构性盲区只有 1 条(CVE-2026-49844)。这两个数字不许混着写。")
+if BLIND_STILL:
+    print("     真正的结构性盲区只有 1 条(CVE-2026-49844)。这两个数字不许混着写。")
+else:
+    print("     🔴 **2026-08-13 起口径已变**:CVE-2026-49844 的 2.x 区间已被 advisory 覆盖,")
+    print("     对跑 2.x 的人**不再是盲区**;仍是盲区的只剩 3.x 预览线。")
+    print("     → 不许再笼统写「有 1 条结构性盲区」,要写清楚是**哪条版本线**。")
 print("   · 装机面 84,480 是**命中 pom.xml 的仓库数**,不是「有多少项目受影响」,更不是「多少人在搜」。")
 
 print()

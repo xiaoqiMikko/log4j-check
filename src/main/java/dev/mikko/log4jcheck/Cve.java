@@ -51,12 +51,24 @@ public record Cve(
          */
         boolean fixedAvailable,
         /**
-         * Dependabot **结构性**报不出这一条。
+         * Dependabot <b>结构性</b>报不出<b>这一条版本线</b>。
          *
-         * <p>🔴 本批的 {@code CVE-2026-49844} 就是:它的 GitHub advisory 是
-         * {@code unreviewed} 且 {@code vulnerabilities} 数组为空 ——
+         * <p>🔴 <b>粒度是「版本线」不是「CVE」</b> —— 同一条 CVE 的不同版本线可以一条可见、一条不可见。
+         * 这不是设计洁癖,是被真事逼出来的:
+         *
+         * <p>{@code CVE-2026-49844} 的 GitHub advisory({@code GHSA-qv9r-c865-cp47})
+         * 原本是 {@code unreviewed} 且 {@code vulnerabilities} 数组为空 ——
          * 没有包名、没有版本区间、没有修复版,Dependabot 拿不到任何可比对的数据。
-         * 而它恰好是唯一把正确答案从 2.25.4 顶到 2.25.5 的那一条。
+         * <b>2026-08-13,GitHub 把它转成 {@code reviewed} 并补齐了两条区间</b>
+         * ({@code >=2.13.1,<2.25.5} 和 {@code >=2.26.0,<2.26.1}),
+         * 于是 <b>2.25 / 2.26 两条线不再是盲区,而 3.x 预览线至今没有对应区间、仍然是</b>。
+         *
+         * <p>⚠️ <b>所以别一刀切</b>:按 CVE 整条翻这个标志,两个方向都会错 ——
+         * 翻成 {@code false} 会漏掉 3.x,留成 {@code true} 会对 2.x 用户说假话。
+         * {@code CveTableTest#oneStructuralBlindSpot} 两个方向都钉死了。
+         *
+         * <p>🔑 教训本身比这条数据值钱:<b>advisory 的形态会随时间被上游补齐,而没有任何东西会通知你。</b>
+         * 「当时扫过了」和「现在是安全的」是两件事。
          */
         boolean dependabotBlind,
         /**

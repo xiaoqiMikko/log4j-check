@@ -20,8 +20,12 @@ import java.util.Set;
  *   <li>{@code log4j-api} 跟着 BOM 也到了 2.25.4;
  *   <li><b>{@code CVE-2026-49844} 还在</b> —— 它要 2.25.5。
  * </ul>
- * 而这一条的 GitHub advisory 是 {@code unreviewed} 且没有任何包/版本数据
- * (见 {@link Cve#dependabotBlind()}),<b>Dependabot 不会提醒你</b>。
+ * <p>⚠️ <b>2026-08-16 修正</b>:这里原本写着「而这一条的 GitHub advisory 是 {@code unreviewed}
+ * 且没有任何包/版本数据,Dependabot 不会提醒你」。
+ * {@code GHSA-qv9r-c865-cp47} 已于 <b>2026-08-13</b> 转 {@code reviewed} 并补齐两条 2.x 区间
+ * ({@code >=2.13.1,<2.25.5} 与 {@code >=2.26.0,<2.26.1}),所以<b>跑 2.x 的人现在收得到告警了</b>;
+ * 仍然报不出来的只剩 <b>3.x 预览线</b>(见 {@link Cve#dependabotBlind()},该标志已按版本线逐行修正)。
+ * <b>上面那条升级结论完全不受影响</b> —— 升到 2.25.4 仍然不够,{@code log4j-api} 仍要 2.25.5。
  *
  * <p>本批还有两条独立的「补丁不完整」链,原文自己写着:
  * {@code CVE-2025-68161}(2.25.3)→ {@code CVE-2026-34477}(2.25.4);

@@ -359,9 +359,10 @@ public final class Main {
                             + "本条要 " + c.fixedIn());
                 }
                 if (c.dependabotBlind()) {
-                    out.println("        🔴 这条 **Dependabot 报不出来**:它的 GitHub advisory"
+                    out.println("        🔴 **你这条版本线,Dependabot 报不出来**:它的 GitHub advisory"
                             + (c.ghsaId().isEmpty() ? "" : "(" + c.ghsaId() + ")")
-                            + "是 unreviewed 且没有任何包名/版本区间数据");
+                            + "没有覆盖 " + c.line() + " 这条线的版本区间,"
+                            + "拿不到可比对的数据");
                 }
             }
         }
@@ -418,7 +419,7 @@ public final class Main {
                 gaps.forEach((c, why) -> {
                     out.println("     " + c.cveId() + ":" + why);
                     if (c.dependabotBlind()) {
-                        out.println("        🔴 而这一条 Dependabot 结构性报不出来,"
+                        out.println("        🔴 而你这条版本线 Dependabot 结构性报不出来,"
                                 + "不会有任何自动告警提醒你。");
                     }
                 });
@@ -434,16 +435,19 @@ public final class Main {
         out.println("     绝大多数项目的 pom 里只写 log4j-core,另外三个模块是传递进来或按需引入的。");
         out.println("     → 这一条**不是 Dependabot 的错**:它会按你实际的依赖树逐个模块告警。"
                 + "会漏的是「我只关心 log4j-core 版本」这个人为习惯。");
-        if (CveTable.DEPENDABOT_BLIND > 0) {
-            out.println("  ② **结构性盲区**:有 " + CveTable.DEPENDABOT_BLIND
-                    + " 条按**任何**坐标都查不到 —— 它的 GitHub advisory 是 unreviewed 且");
-            out.println("     vulnerabilities 数组为空(没有包名、没有版本区间、没有修复版),"
-                    + "Dependabot 拿不到任何可比对的数据。");
-            out.println("     🔴 而它恰好是唯一把正确答案从 " + CveTable.POPULAR_FIX
-                    + " 顶上去的那一条。");
+        if (CveTable.dependabotBlind() > 0) {
+            out.println("  ② **结构性盲区**:有 " + CveTable.dependabotBlind()
+                    + " 条**版本线**的区间在 GitHub advisory 里根本没有对应条目,");
+            out.println("     Dependabot 拿不到任何可比对的数据 —— 跑在这条线上的人不会收到告警。");
         } else {
             out.println("  ② 结构性盲区:本次实测为 0 条 —— 这是查了两个源之后的结论,不是默认值。");
         }
+        out.println();
+        out.println("  📌 **这两个数字都会随时间变,而且不会有人通知你**:");
+        out.println("     " + CveTable.FORMERLY_BLIND_NOTE);
+        out.println("     🔑 **「当时扫过了」和「现在是安全的」是两件事** —— "
+                + "advisory 的形态会被上游补齐,");
+        out.println("     而你上一次扫描的结论**不会自己更新**。定期重扫,别信旧报告。");
 
         // ── 六、边界(不许暗示「扫过就没事」)──
         out.println();

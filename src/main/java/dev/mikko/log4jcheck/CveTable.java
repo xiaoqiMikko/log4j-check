@@ -38,8 +38,33 @@ public final class CveTable {
      */
     public static final int VISIBLE_BY_CORE_COORD = 4;
 
-    /** 四个模块坐标全查也查不到的条数 —— 即 Dependabot <b>结构性</b>报不出来的。 */
-    public static final int DEPENDABOT_BLIND = 1;
+    /**
+     * 四个模块坐标全查也查不到的**版本线**条数 —— 即 Dependabot <b>结构性</b>报不出来的。
+     *
+     * <p>🔴 <b>2026-08-16:这个数字曾经是硬编码的 {@code 1},而它同时也由表里的
+     * {@code dependabotBlind} 标志决定 —— 两处状态,改一处不会带动另一处。</b>
+     * 08-13 上游补齐 {@code GHSA-qv9r-c865-cp47} 之后,表改了而这个常量不会跟着改,
+     * 报告就会印出与表自相矛盾的数字。**现在改为从表算,它不可能再漂移。**
+     *
+     * <p>⚠️ 单位是<b>版本线</b>不是 CVE 条数:同一条 CVE 的不同版本线可能一条可见、一条不可见
+     * (49844 就是:2.25/2.26 两条线 08-13 已被 advisory 覆盖,而 <b>3.x 预览线至今没有</b>)。
+     *
+     * <p>⚠️ 这里<b>故意做成方法而不是常量</b>:{@code static final} 字段按源码顺序初始化,
+     * 而它要数的 {@code ALL} 在下面的 static 块里才填充 —— 写成字段会恒为 0 且不报错。
+     */
+    public static int dependabotBlind() {
+        return (int) ALL.stream().filter(Cve::dependabotBlind).count();
+    }
+
+    /**
+     * 曾经是盲区、后来被上游补齐的版本线 —— 保留它是因为
+     * <b>「当时扫过了」和「现在是安全的」是两件事</b>:在补齐之前扫过的人,那次扫描漏了它,
+     * 而没有任何东西会通知他重扫一遍。
+     */
+    public static final String FORMERLY_BLIND_NOTE =
+            "CVE-2026-49844(GHSA-qv9r-c865-cp47)的 2.25 / 2.26 两条线,"
+            + "在 2026-08-13 之前 advisory 是 unreviewed 且无包数据,那段时间 Dependabot 报不出来;"
+            + "08-13 已补齐,现在报得出来。3.x 预览线至今仍未被覆盖。";
 
     /** 这批 advisory 里出现最多的修复版 —— 也就是大多数人照抄的那个。 */
     public static final String POPULAR_FIX = "2.25.4";
@@ -47,8 +72,8 @@ public final class CveTable {
     private static final List<Cve> ALL = new ArrayList<>();
 
     static {
-        add("CVE-2026-49844", "GHSA-qv9r-c865-cp47", "log4j-api", "medium", 6.3, "2.25", "2.13.1", true, "2.25.5", false, "2.25.5", true, true, "CVE-2026-34481", "2.25.4", "MAP_MESSAGE_AS_JSON", "仅当用 JsonTemplateLayout 的 message resolver,或代码里直接调 MapMessage.asJson() / getFormattedMessage(new String[]{\"JSON\"}),且 MapMessage 里带浮点值", "E:JsonTemplateLayout | S:asJson | S:getFormattedMessage ; S:MapMessage", "", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in…", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in Apache Log4j API produces output that is not valid JSON.");
-        add("CVE-2026-49844", "GHSA-qv9r-c865-cp47", "log4j-api", "medium", 6.3, "2.26", "2.26.0", true, "2.26.1", false, "2.26.1", true, true, "CVE-2026-34481", "2.25.4", "MAP_MESSAGE_AS_JSON", "仅当用 JsonTemplateLayout 的 message resolver,或代码里直接调 MapMessage.asJson() / getFormattedMessage(new String[]{\"JSON\"}),且 MapMessage 里带浮点值", "E:JsonTemplateLayout | S:asJson | S:getFormattedMessage ; S:MapMessage", "", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in…", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in Apache Log4j API produces output that is not valid JSON.");
+        add("CVE-2026-49844", "GHSA-qv9r-c865-cp47", "log4j-api", "medium", 6.3, "2.25", "2.13.1", true, "2.25.5", false, "2.25.5", true, false, "CVE-2026-34481", "2.25.4", "MAP_MESSAGE_AS_JSON", "仅当用 JsonTemplateLayout 的 message resolver,或代码里直接调 MapMessage.asJson() / getFormattedMessage(new String[]{\"JSON\"}),且 MapMessage 里带浮点值", "E:JsonTemplateLayout | S:asJson | S:getFormattedMessage ; S:MapMessage", "", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in…", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in Apache Log4j API produces output that is not valid JSON.");
+        add("CVE-2026-49844", "GHSA-qv9r-c865-cp47", "log4j-api", "medium", 6.3, "2.26", "2.26.0", true, "2.26.1", false, "2.26.1", true, false, "CVE-2026-34481", "2.25.4", "MAP_MESSAGE_AS_JSON", "仅当用 JsonTemplateLayout 的 message resolver,或代码里直接调 MapMessage.asJson() / getFormattedMessage(new String[]{\"JSON\"}),且 MapMessage 里带浮点值", "E:JsonTemplateLayout | S:asJson | S:getFormattedMessage ; S:MapMessage", "", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in…", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in Apache Log4j API produces output that is not valid JSON.");
         add("CVE-2026-49844", "GHSA-qv9r-c865-cp47", "log4j-api", "medium", 6.3, "3.x", "3.0.0-alpha1", true, "3.0.0-beta2", true, "", false, true, "CVE-2026-34481", "2.25.4", "MAP_MESSAGE_AS_JSON", "仅当用 JsonTemplateLayout 的 message resolver,或代码里直接调 MapMessage.asJson() / getFormattedMessage(new String[]{\"JSON\"}),且 MapMessage 里带浮点值", "E:JsonTemplateLayout | S:asJson | S:getFormattedMessage ; S:MapMessage", "", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in…", "Improper encoding of non-finite floating-point values during MapMessage JSON serialization in Apache Log4j API produces output that is not valid JSON.");
         add("CVE-2026-34481", "GHSA-w35j-pv5h-q9q9", "log4j-layout-template-json", "medium", 6.3, "2.25", "2.14.0", true, "2.25.4", false, "2.25.4", true, false, "", "", "JSON_TEMPLATE_LAYOUT", "仅当用 JsonTemplateLayout,且记的日志里带 MapMessage / ObjectMessage (含直接 log 一个对象)里的浮点值", "E:JsonTemplateLayout ; S:MapMessage | S:ObjectMessage", "", "Apache Log4j JSON Template Layout: Improper serialization of non-finite floating-point values in…", "Apache Log4j's JsonTemplateLayout, in versions up to and including 2.25.3, produces invalid JSON output when log events contain non-finite floating-point values (NaN, Infinity, or -Infinity), which are prohibited by RFC…");
         add("CVE-2026-34481", "GHSA-w35j-pv5h-q9q9", "log4j-layout-template-json", "medium", 6.3, "3.x", "3.0.0-alpha1", true, "3.0.0-beta3", true, "", false, false, "", "", "JSON_TEMPLATE_LAYOUT", "仅当用 JsonTemplateLayout,且记的日志里带 MapMessage / ObjectMessage (含直接 log 一个对象)里的浮点值", "E:JsonTemplateLayout ; S:MapMessage | S:ObjectMessage", "", "Apache Log4j JSON Template Layout: Improper serialization of non-finite floating-point values in…", "Apache Log4j's JsonTemplateLayout, in versions up to and including 2.25.3, produces invalid JSON output when log events contain non-finite floating-point values (NaN, Infinity, or -Infinity), which are prohibited by RFC…");

@@ -8,7 +8,8 @@ import java.util.List;
  * <ol>
  *   <li><b>版本判定</b>(硬判据)—— 扫到的模块坐标 + 版本落不落在受影响区间里。
  *       这一步 Dependabot 也做 —— 但只对它<b>索引得到</b>的条目做,
- *       本批有一条它结构性索引不到(见 {@link Cve#dependabotBlind()})。
+ *       本批仍有一条<b>版本线</b>它结构性索引不到(见 {@link Cve#dependabotBlind()};
+ *       粒度是版本线不是 CVE —— 49844 的 2.x 线已于 2026-08-13 被上游补齐,3.x 线仍不可见)。
  *   <li><b>触发条件判定</b>(降噪)—— 你的 log4j2 配置里有没有那条 advisory 要求的
  *       layout / appender / 属性。这一步是本工具存在的理由,也是唯一能给出
  *       「7 条里你真中 2 条」的地方。
