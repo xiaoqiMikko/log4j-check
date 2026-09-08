@@ -117,7 +117,7 @@ public final class Scanner {
                 warnings::add);
         // 🔴 不是有效 zip 的文件会解出 0 个条目且**不抛异常** —— 实测确认过。
         //    不报出来的话,「这个 jar 坏了」会表现成「这个 jar 里没有 log4j」。
-        Archives.warnIfEmpty(f.toString(), entries, warnings::add);
+        Archives.warnIfEmpty(f.toString(), entries, bytes, warnings::add);
     }
 
     /**

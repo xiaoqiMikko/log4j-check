@@ -85,14 +85,42 @@ public final class Archives {
      * 而那和「你很安全」长得一模一样。第 6 注和第 4 注各踩过一次同型的洞
      * (`10-教训.md`「静默故障最贵」),所以这里把它变成一句响的告警。
      *
+     * <p>⚠️ <b>2026-09-08 修一个假阳性</b>:原本只看 {@code entries == 0},
+     * 而<b>合法的空 jar 本来就是 0 个条目</b>(空 zip 的魔数是 {@code PK\05\06},
+     * 它是有效归档)。于是每个空 jar 都会收到一句「很可能不是有效的 zip/jar」——
+     * 🔑 <b>假告警多了,真告警就没人看了</b>,这和静默漏报是同一枚硬币的两面。
+     * 现在先验魔数:不是 zip 才报,是 zip 但真的空则不报。
+     *
      * @param entries {@link #walk} 的返回值;-1 表示已经报过解析失败了
+     * @param bytes   原始字节,用于区分「不是 zip」和「合法的空 zip」
      */
-    public static void warnIfEmpty(String path, int entries, Consumer<String> warn) {
-        if (entries == 0) {
-            warn.accept("这个文件看起来是归档,但一个条目都解不出来:" + path
-                    + "(🔴 很可能不是有效的 zip/jar —— 截断、下载不全,或其实是个 HTML 错误页。"
-                    + "**这不等于「里面没有 log4j」**)");
+    public static void warnIfEmpty(String path, int entries, byte[] bytes, Consumer<String> warn) {
+        if (entries != 0) {
+            return;
         }
+        if (isEmptyZip(bytes)) {
+            // 合法但确实空的归档 —— 不是错误,不报。
+            return;
+        }
+        warn.accept("这个文件看起来是归档,但一个条目都解不出来:" + path
+                + "(🔴 很可能不是有效的 zip/jar —— 截断、下载不全,或其实是个 HTML 错误页。"
+                + "**这不等于「里面没有 log4j」**)");
+    }
+
+    /**
+     * 是不是一个<b>合法的空 zip</b>。
+     *
+     * <p>🔴 <b>判据不是「魔数像 zip」,是「整个文件就是一条 22 字节的 EOCD 记录」</b> ——
+     * 空 zip 只有 end-of-central-directory 这一条记录,固定 22 字节,以 {@code PK\05\06} 开头。
+     *
+     * <p>☠️ <b>2026-09-08 差点写错</b>:第一版写成「魔数是 zip 就当合法」,
+     * 于是一个 {@code PK\03\04} 开头但内容截断的文件也被放行了 ——
+     * 而那正是本项目的回归测试 {@code warnsOnBrokenArchive} 用的样本,它当场把这个错拦了下来。
+     * 🔑 <b>放宽一个判据时,先看它原来挡住的是什么。</b>
+     */
+    static boolean isEmptyZip(byte[] b) {
+        return b != null && b.length == 22
+                && b[0] == 'P' && b[1] == 'K' && b[2] == 5 && b[3] == 6;
     }
 
     private static byte[] readLimited(ZipInputStream zis, Consumer<String> warn, String what) {

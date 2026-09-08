@@ -332,7 +332,7 @@ public final class ConfigScan {
                         offerFile(path, data);
                     }
                 }, warnings::add);
-        Archives.warnIfEmpty(archive.toString(), entries, warnings::add);
+        Archives.warnIfEmpty(archive.toString(), entries, bytes, warnings::add);
     }
 
     /** 按扩展名分派。这是唯一决定「走结构化还是走文本」的地方。 */
