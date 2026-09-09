@@ -158,6 +158,32 @@ public final class ConfigScan {
     private final Map<String, List<Evidence>> hits = new LinkedHashMap<>();
     private final Map<String, Integer> counts = new LinkedHashMap<>();
     private final List<String> warnings = new ArrayList<>();
+
+    /**
+     * 有多少个文件是「读不动」的。存在的理由是退出码:
+     * 留痕给人看,退出码给机器看 —— 少了它,「我没能读它」在自动化里等于「通过」。
+     */
+    private int unreadable;
+
+    /** 读不动的文件数 —— 大于 0 时退出码不许是 0。 */
+    /**
+     * 收告警的唯一入口 —— **所有** 告警都必须走它,不许再出现裸的 {@code warnings::add}。
+     *
+     * <p>🔴 由来(2026-09-09):第一版只给其中一个调用点加了计数,而同一个类里还有三处
+     * {@code warnings::add} —— 结果是告警照常打印、退出码照常是 0,**改了等于没改**。
+     * 收敛成一个方法之后,新增调用点会自然带上计数,漏不掉。
+     */
+    private void warn(String w) {
+        warnings.add(w);
+        if (Archives.isUnreadableWarning(w)) {
+            unreadable++;
+        }
+    }
+
+    public int unreadableCount() {
+        return unreadable;
+    }
+
     private final List<String> configFiles = new ArrayList<>();
     private int structuredFiles;
     private int textConfigFiles;
@@ -305,6 +331,7 @@ public final class ConfigScan {
             }
             return Files.readAllBytes(f);
         } catch (IOException e) {
+            unreadable++;
             warnings.add("读取失败 " + f + ":" + e.getMessage()
                     + "(🔴 这不等于「它里面没有触发条件」)");
             return null;
@@ -331,8 +358,8 @@ public final class ConfigScan {
                     if (CONFIG_NAME.matcher(base).matches() && !insideLog4jModuleJar(path)) {
                         offerFile(path, data);
                     }
-                }, warnings::add);
-        Archives.warnIfEmpty(archive.toString(), entries, bytes, warnings::add);
+                }, this::warn);
+        Archives.warnIfEmpty(archive.toString(), entries, bytes, this::warn);
     }
 
     /** 按扩展名分派。这是唯一决定「走结构化还是走文本」的地方。 */

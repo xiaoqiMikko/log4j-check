@@ -59,6 +59,32 @@ public final class Scanner {
     private final List<Artifact> found = new ArrayList<>();
     private final List<String> warnings = new ArrayList<>();
 
+    /**
+     * 有多少个文件是「读不动」的。存在的理由是退出码:
+     * 留痕给人看,退出码给机器看 —— 少了它,「我没能读它」在自动化里等于「通过」。
+     */
+    private int unreadable;
+
+    /** 读不动的文件数 —— 大于 0 时退出码不许是 0。 */
+    /**
+     * 收告警的唯一入口 —— **所有** 告警都必须走它,不许再出现裸的 {@code warnings::add}。
+     *
+     * <p>🔴 由来(2026-09-09):第一版只给其中一个调用点加了计数,而同一个类里还有三处
+     * {@code warnings::add} —— 结果是告警照常打印、退出码照常是 0,**改了等于没改**。
+     * 收敛成一个方法之后,新增调用点会自然带上计数,漏不掉。
+     */
+    private void warn(String w) {
+        warnings.add(w);
+        if (Archives.isUnreadableWarning(w)) {
+            unreadable++;
+        }
+    }
+
+    public int unreadableCount() {
+        return unreadable;
+    }
+
+
     public List<Artifact> artifacts() {
         return found;
     }
@@ -99,6 +125,7 @@ public final class Scanner {
         try {
             bytes = Files.readAllBytes(f);
         } catch (IOException e) {
+            unreadable++;
             warnings.add("读取失败 " + f + ":" + e.getMessage()
                     + "(🔴 这不等于「里面没有 log4j」)");
             return;
@@ -114,10 +141,10 @@ public final class Scanner {
                         identify(path, data);
                     }
                 },
-                warnings::add);
+                this::warn);
         // 🔴 不是有效 zip 的文件会解出 0 个条目且**不抛异常** —— 实测确认过。
         //    不报出来的话,「这个 jar 坏了」会表现成「这个 jar 里没有 log4j」。
-        Archives.warnIfEmpty(f.toString(), entries, bytes, warnings::add);
+        Archives.warnIfEmpty(f.toString(), entries, bytes, this::warn);
     }
 
     /**
@@ -141,7 +168,7 @@ public final class Scanner {
                 mf[0] = r[0];
                 mf[1] = r[1];
             }
-        }, warnings::add);
+        }, this::warn);
         if (gotCoord[0]) {
             return;
         }

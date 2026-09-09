@@ -66,7 +66,7 @@ public final class Archives {
                 }
             }
         } catch (IOException | IllegalArgumentException ex) {
-            warn.accept("归档解析失败 " + path + ":" + ex.getMessage()
+            warn.accept(BROKEN_ARCHIVE_PREFIX + path + ":" + ex.getMessage()
                     + "(🔴 这不等于「里面什么都没有」,请手工确认)");
             return -1;
         }
@@ -94,6 +94,22 @@ public final class Archives {
      * @param entries {@link #walk} 的返回值;-1 表示已经报过解析失败了
      * @param bytes   原始字节,用于区分「不是 zip」和「合法的空 zip」
      */
+    /** 「解不出条目」的告警前缀 —— 文案与判据是同一个常量,不许各写一份。 */
+    public static final String EMPTY_ARCHIVE_PREFIX = "这个文件看起来是归档,但一个条目都解不出来:";
+
+    /** 「归档解析失败」的告警前缀。 */
+    public static final String BROKEN_ARCHIVE_PREFIX = "归档解析失败 ";
+
+    /**
+     * 这条告警是不是「读不动」类。
+     *
+     * <p>调用方据它把退出码抬到 4 —— 留痕是给人看的,而 CI 与脚本看的是退出码。
+     */
+    public static boolean isUnreadableWarning(String w) {
+        return w != null
+                && (w.startsWith(EMPTY_ARCHIVE_PREFIX) || w.startsWith(BROKEN_ARCHIVE_PREFIX));
+    }
+
     public static void warnIfEmpty(String path, int entries, byte[] bytes, Consumer<String> warn) {
         if (entries != 0) {
             return;
@@ -102,7 +118,7 @@ public final class Archives {
             // 合法但确实空的归档 —— 不是错误,不报。
             return;
         }
-        warn.accept("这个文件看起来是归档,但一个条目都解不出来:" + path
+        warn.accept(EMPTY_ARCHIVE_PREFIX + path
                 + "(🔴 很可能不是有效的 zip/jar —— 截断、下载不全,或其实是个 HTML 错误页。"
                 + "**这不等于「里面没有 log4j」**)");
     }

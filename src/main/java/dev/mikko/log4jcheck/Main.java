@@ -24,12 +24,18 @@ import java.util.Set;
  */
 public final class Main {
 
-    private static final String VERSION = "0.1.1";
+    private static final String VERSION = "0.1.2";
 
     /** 退出码:0 = 没有版本命中;2 = 版本命中但配置里没找到触发条件;3 = 触发条件也成立。 */
     private static final int EXIT_CLEAN = 0;
     private static final int EXIT_VERSION_ONLY = 2;
     private static final int EXIT_TRIGGERED = 3;
+
+    /**
+     * 有文件读不动 —— 「我没能读它」不许在自动化里等于「通过」(2026-09-09 加)。
+     * 发现了真问题时不降级成它:命中比读不动更要紧。
+     */
+    private static final int EXIT_UNREADABLE = 4;
 
     public static void main(String[] args) throws IOException {
         PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -101,6 +107,10 @@ public final class Main {
             if (v.versionHit()) {
                 code = EXIT_VERSION_ONLY;
             }
+        }
+        // 🔴 干净但有文件读不动时,退出码不许停在 0。
+        if (code == EXIT_CLEAN && scanner.unreadableCount() + scan.unreadableCount() > 0) {
+            code = EXIT_UNREADABLE;
         }
         System.exit(code);
     }
